@@ -1,11 +1,14 @@
 # American put option pricer
 
-Solving American put value with numerical PDE method under Black-Scholes assumptions.
+Solving American put value under Black-Scholes assumptions.
 
 ---
+## Numerical PDE method
 
-## Sample Output
+### References
+TODO
 
+### Sample Output
 ```
 # American put (BS model) value with following parameters:
 # rate             = .05
