@@ -38,20 +38,31 @@ class AmericanPut(object):
     # theta  | Crank-Nicolson scheme (theta = .5), implicit scheme (theta = 0.)
     # tol    | tolerance level
 
-    tol     = 1e-6
-    N       = 100           # TODO hard coded value
-    _payoff = None
-    _value  = None
-    _soln   = None
+    tol       = 1e-6
+    N         = 100           # TODO hard coded value
+    _payoff   = None
+    _values   = None
+    _soln     = None
+
+    # default unit grid
+    unit_grid = unique(hstack((linspace(0  , .4 , 20),     # coarser grid when far away from strike
+                               linspace(.4 , .8 , 50),
+                               linspace(.8 , .9 , 75),
+                               linspace(.9 , 1.1, 200),    # finer grid centered around strike
+                               linspace(1.1, 1.2, 75),
+                               linspace(1.2, 1.6, 50),
+                               linspace(1.6, 2  , 20),
+                               linspace(2  , 10 , 50))))   # throw in a few far-far-away points, just in case
 
 
-    def __init__(self, rate, sigma, strike, init_value, time_to_maturity):
+    def __init__(self, rate, sigma, strike, init_value, time_to_maturity, *a, **kw):
         self.r     = rate
         self.sigma = sigma
         self.K     = strike
         self.S0    = init_value
         self.T     = time_to_maturity
-        # interpolate S-grid
+        if kw.has_key('unit_grid'):
+            self.unit_grid = kw['unit_grid']
         self.S     = self._grid(strike)
 
 
@@ -63,16 +74,7 @@ class AmericanPut(object):
 
 
     def _grid(self, strike):
-        # TODO hard coded grid layout
-        return strike * unique(hstack((
-            linspace(0  , .4 , 20),     # coarser grid when far away from strike
-            linspace(.4 , .8 , 50),
-            linspace(.8 , .9 , 75),
-            linspace(.9 , 1.1, 200),    # finer grid centered around strike
-            linspace(1.1, 1.2, 75),
-            linspace(1.2, 1.6, 50),
-            linspace(1.6, 2  , 20),
-            linspace(2  , 10 , 50))))   # throw in a few far-far-away points, just in case
+        return strike * self.unit_grid
 
 
     def _alpha_beta(self, sigma, r, S):
@@ -199,21 +201,22 @@ class AmericanPut(object):
 
     def solve(self):
         U = self._solve_time_axis()
-        self._value = interp1d(self.S, U, kind='linear')
-        self._soln = zip(self.S, U)
+        self._values = interp1d(self.S, U, kind='linear')
+        # self._soln = zip(self.S, U)
+        self._soln = U
 
 
     def value_at(self, underlying):
-        if self._value is None:
+        if self._values is None:
             self.solve()
-        return self._value(underlying)
+        return self._values(underlying)
 
 
     @property
-    def value(self):
-        if self._value is None:
+    def values(self):
+        if self._values is None:
             self.solve()
-        return self._value
+        return self._values
 
 
     @property
