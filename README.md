@@ -21,4 +21,7 @@ $ python pde.py             # run main()
 11.1518693937               # option value at 0.97*strike
 9.86830992264               # option value at strike
 8.71424447667               # option value at 1.03*strike
+
+$ python plot.py            # price options at different maturities, show a summary plot
 ```
+![aput.png](aput.png)
