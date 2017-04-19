@@ -1,6 +1,6 @@
 from pde import AmericanPut
 
-class GreeksException(object):
+class GreeksException(Exception):
     pass
 
 class Greeks(object):
