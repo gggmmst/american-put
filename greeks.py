@@ -41,12 +41,19 @@ class Greeks(object):
 ##
 
 def test():
-    rate             = .05
+
+    # BS parameters
+    rate             = .01
     sigma            = .3
     strike           = 100.
     init_value       = 100.
     time_to_maturity = 1.
+
+    # compute option object
     option = AmericanPut(rate, sigma, strike, init_value, time_to_maturity)
+    option.solve(-1)    # use fully implicit scheme
+
+    # compute greeks
     g = Greeks(option)
     print g.delta('forward')
     print g.gamma()

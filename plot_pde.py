@@ -12,21 +12,21 @@ plt.style.use('ggplot')
 from pde import AmericanPut
 
 # model parameters
-rate             = .05
-sigma            = .3
-strike           = 100.
-init_value       = 100.
-unit_grid = unique(hstack((linspace(0  , .4 , 20),     # coarser grid when far away from strike
-                           linspace(.4 , .8 , 50),
-                           linspace(.8 , .9 , 75),
-                           linspace(.9 , 1.1, 200),    # finer grid centered around strike
-                           linspace(1.1, 1.2, 75),
-                           linspace(1.2, 1.6, 50),
-                           linspace(1.6, 2  , 20),
-                           linspace(2  , 10 , 50))))   # throw in a few far-far-away points, just in case
+rate             = .001
+sigma            = .37
+strike           = 99.
+init_value       = 100.25
+unit_grid = hstack((linspace(0  , .4 , 50 , endpoint=False),
+                    linspace(.4 , .8 , 80 , endpoint=False),
+                    linspace(.8 , .9 , 80 , endpoint=False),
+                    linspace(.9 , 1.1, 200, endpoint=False),
+                    linspace(1.1, 1.2, 80 , endpoint=False),
+                    linspace(1.2, 1.6, 80 , endpoint=False),
+                    linspace(1.6, 2  , 50 , endpoint=False),
+                    linspace(2  , 5  , 50)))
 strikes = strike * unit_grid
 
-# currying by lambda
+# lambda currying
 # optionT := AmericanPut with all parameters fixed except *time_to_maturity*
 optionT = lambda t: AmericanPut(rate, sigma, strike, init_value, t, unit_grid=unit_grid)
 
@@ -47,11 +47,12 @@ data = {'payoff'     : payoff,
         'put (T=1y)' : a12.soln}
 df = pd.DataFrame(data, index=strikes)
 # focus on (interesting) area near strike
-df = df[(df.index >= 50) & (df.index < 200)]
+df = df[(df.index >= 40) & (df.index < 200)]
 
 # make plot
 df.plot()
-plt.title('American put value\n(r=.05, sigma=.3, strike=100, S0=100)')
+title = 'American put value\n(r={}, sigma={}, strike={}, S0={})'.format(rate, sigma, strike, init_value)
+plt.title(title)
 plt.xlabel('strikes')
 plt.ylabel('option value')
 plt.show()

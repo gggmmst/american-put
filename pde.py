@@ -8,7 +8,7 @@ from numpy import (
     hstack,
     linspace,
     ones,
-    unique,
+    # unique,
     zeros,
 )
 import numpy
@@ -33,26 +33,26 @@ class AmericanPut(object):
     # T      | time to maturity
     # K      | strike value
     # S0     | underlying initial value
-    # N      | a value indirectly determine timestep sizes (see details)
+    # N      | a value indirectly determines timestep sizes (see details)
     # S      | a vector, S-grid
     # theta  | Crank-Nicolson scheme (theta = .5), implicit scheme (theta = 0.)
     # tol    | tolerance level
 
     tol       = 1e-6
-    N         = 100           # TODO hard coded value
+    N         = 500           # TODO hard coded value
     _payoff   = None
     _values   = None
     _soln     = None
 
     # default unit grid
-    unit_grid = unique(hstack((linspace(0  , .4 , 20),     # coarser grid when far away from strike
-                               linspace(.4 , .8 , 50),
-                               linspace(.8 , .9 , 75),
-                               linspace(.9 , 1.1, 200),    # finer grid centered around strike
-                               linspace(1.1, 1.2, 75),
-                               linspace(1.2, 1.6, 50),
-                               linspace(1.6, 2  , 20),
-                               linspace(2  , 10 , 50))))   # throw in a few far-far-away points, just in case
+    unit_grid = hstack((linspace(0  , .4 , 50 , endpoint=False),     # coarser grid when far away from strike
+                        linspace(.4 , .8 , 100, endpoint=False),
+                        linspace(.8 , .9 , 100, endpoint=False),
+                        linspace(.9 , 1.1, 300, endpoint=False),     # finer grid centered around strike
+                        linspace(1.1, 1.2, 100, endpoint=False),
+                        linspace(1.2, 1.6, 100, endpoint=False),
+                        linspace(1.6, 2  , 50 , endpoint=False),
+                        linspace(2  , 10 , 50)))   # throw in a few far-far-away points, just in case
 
 
     def __init__(self, rate, sigma, strike, init_value, time_to_maturity, *a, **kw):
@@ -74,6 +74,7 @@ class AmericanPut(object):
 
 
     def _grid(self, strike):
+        self.unit_grid.sort()
         return strike * self.unit_grid
 
 
@@ -153,7 +154,8 @@ class AmericanPut(object):
             L, R = self._M(theta, dtau, r, alpha, beta, penalty)
 
             # solve linear system, solution is the estimate of the option values on S-axis
-            u = _spsolve(L, (R*U0)+(penalty*payoff))
+            u = _spsolve(L, (R*U0)+(penalty*payoff))    # FIXME SparseEfficiencyWarning:
+                                                        # FIXME spsolve requires A beCSC or CSR matrix format
 
             # compute (worst) error
             e = abs(u-U1)/fmax(1.,abs(u))
@@ -165,42 +167,44 @@ class AmericanPut(object):
         return U1
 
 
-    def _solve_time_axis(self, rannacher_steps=-1):
+    def _solve_time_axis(self, rannacher_steps=2):
 
         ##
         ## rannacher smoothing(implicit at first, then crank-nicolson), variable timesteps
         ##
+        ## default rannacher_steps to 2
+        ## set to -1 => fully implicit scheme
+        ##
 
-        U0              = self.payoff.copy()
-        T               = self.T
-        rannacher_steps = 2
-        tau             = 0.
-        dtau            = T/float(self.N)
-        D               = 1.
-        dnorm           = .1
-        n               = 1
+        U0    = self.payoff.copy()
+        T     = self.T
+        tau   = 0.
+        dtau  = T/float(self.N)
+        D     = 1.
+        dnorm = .1
+        n     = 1
 
         while tau < T:
 
             tau += dtau
-            theta = .5 if n > rannacher_steps else 0
+            theta = .5 if 0 <= rannacher_steps < n else 0    # NOTE test >=0 to see whether fully implicit
             U1 = self._solve_space_axis(U0, theta, dtau)
 
             if tau >= T:
                 break
             else:
-                e = _abs(U1-U0)/fmax(D, fmax(_abs(U1), _abs(U0)))
-                emax = e.max()
-                dtau *= dnorm/emax
-                dtau = min(dtau, self.T-tau)
-                n += 1
-                U0, U1 = U1, None
+                e       = _abs(U1-U0)/fmax(D, fmax(_abs(U1), _abs(U0)))
+                emax    = e.max()
+                dtau   *= dnorm/emax
+                dtau    = min(dtau, self.T-tau)
+                n      += 1
+                U0, U1  = U1, None
 
         return U1
 
 
-    def solve(self):
-        U = self._solve_time_axis()
+    def solve(self, rannacher_steps=2):
+        U = self._solve_time_axis(rannacher_steps)
         self._values = interp1d(self.S, U, kind='linear')
         # self._soln = zip(self.S, U)
         self._soln = U
@@ -231,7 +235,7 @@ class AmericanPut(object):
 
 def main():
 
-    rate             = .05
+    rate             = .01
     sigma            = .3
     strike           = 100.
     init_value       = 100.

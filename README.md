@@ -9,19 +9,39 @@ Solving American put value under Black-Scholes assumptions.
 TODO
 
 ### Sample Output
+
+* put pricer
 ```
-# American put (BS model) value with following parameters:
-# rate             = .05
+# American put (BS model) with following parameters:
+# rate             = .01
 # sigma            = .3
 # strike           = 100.
 # init_value       = 100.
 # time_to_maturity = 1.
 
 $ python pde.py             # run main()
-11.1518693937               # option value at 0.97*strike
-9.86830992264               # option value at strike
-8.71424447667               # option value at 1.03*strike
+12.8016950452               # option value at 0.97*strike
+11.4472341705               # option value at strike
+10.2122740189               # option value at 1.03*strike
 
-$ python plot.py            # price options at different maturities, show a summary plot
 ```
-![aput.png](aput.png)
+
+* put vs payoff
+```
+$ python plot_pde.py        # price options at different maturities, show a summary plot
+```
+![plot_pde.png](plot_pde.png)
+
+
+* delta
+```
+$ python plot_greeks.py delta
+```
+![plot_delta.png](plot_delta.png)
+
+
+* gamma
+```
+$ python plot_greeks.py gamma
+```
+![plot_gamma.png](plot_gamma.png)
