@@ -33,7 +33,7 @@ class AmericanPut(object):
     # T      | time to maturity
     # K      | strike value
     # S0     | underlying initial value
-    # N      | a scalar, number of steps in time-grid (assume contant timestep size)
+    # N      | a value indirectly determine timestep sizes (see details)
     # S      | a vector, S-grid
     # theta  | Crank-Nicolson scheme (theta = .5), implicit scheme (theta = 0.)
     # tol    | tolerance level
