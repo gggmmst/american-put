@@ -30,18 +30,18 @@ $ python pde.py             # run main()
 ```
 $ python plot_pde.py        # price options at different maturities, show a summary plot
 ```
-![plot_pde.png](plot_pde.png)
+![amerput plot](./figs/plot_pde.png)
 
 
 * delta
 ```
 $ python plot_greeks.py delta
 ```
-![plot_delta.png](plot_delta.png)
+![delta plot](./figs/plot_delta.png)
 
 
 * gamma
 ```
 $ python plot_greeks.py gamma
 ```
-![plot_gamma.png](plot_gamma.png)
+![gamma plot](./figs/plot_gamma.png)
